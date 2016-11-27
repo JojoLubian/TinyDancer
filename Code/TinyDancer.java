@@ -3,10 +3,10 @@ package irsystem;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
@@ -24,7 +24,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 
 /**
@@ -206,9 +205,10 @@ public class TinyDancer {
 		Scanner sc = new Scanner(System.in);
 		String query;
 		// directory to index
-		String dir = args[0];
+		String dir=null;
 		
 		try {
+			dir=args[0];
 			TinyDancer td = new TinyDancer(dir); // new irsystem
 			td.createIndex(); // index files
 			td.listFiles();
@@ -229,6 +229,9 @@ public class TinyDancer {
 			e.printStackTrace();
 		} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 			System.out.println("ERROR| Could not parse the query");
+			e.printStackTrace();
+		} catch (ArrayIndexOutOfBoundsException e){
+			System.out.println("ERROR| No path to be indexed was entered. Restart with 'java -jar IR_P01.jar [path_to_folder]'");
 			e.printStackTrace();
 		}
 	}
