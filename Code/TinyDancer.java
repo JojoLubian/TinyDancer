@@ -203,18 +203,24 @@ public class TinyDancer {
 	}
 
 	public static void main(String[] args) {
-
+		Scanner sc = new Scanner(System.in);
+		String query;
 		// directory to index
-		String dir = "/home/urmikl18/Uni/WiSe1617/InformationRetrieval/testfolder";
-		String query = "river";
-		// String dir = args[0];
+		String dir = args[0];
+		
 		try {
 			TinyDancer td = new TinyDancer(dir); // new irsystem
 			td.createIndex(); // index files
 			td.listFiles();
-			td.searchFor(query);
-			query = "holler";
-			td.searchFor(query);
+			
+			System.out.println("Tip 'q' to quit \n Searching for: ");
+			query = sc.next();
+			while(!query.equals("q"))
+			{
+				td.searchFor(query);
+				System.out.println("\n Tip 'q' to quit \n Searching for: ");
+				query = sc.next();
+			}
 		} catch (IOException e) {
 			System.out.println("ERROR| Could not index the directory: " + dir);
 			e.printStackTrace();
