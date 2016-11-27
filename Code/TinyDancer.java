@@ -1,5 +1,3 @@
-package irsystem;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -28,7 +26,7 @@ import org.apache.lucene.store.RAMDirectory;
 
 /**
  * Command line based Information Retrieval System Parses and indexes
- * .htm,.html,.txt files Uses Porter Stemmer w/ Stop Word elimination Uses
+ * .htm,.html,.txt files Uses Porter Stemmer Stop Word elimination Uses
  * inverted index Delivers a ranked list of files that fulfill the query
  */
 public class TinyDancer {
@@ -36,9 +34,9 @@ public class TinyDancer {
 	private String catalog; // directory to be indexed
 	private ArrayList<File> files = new ArrayList<File>(); // list of added
 															// files
-	private StandardAnalyzer analyzer = new StandardAnalyzer(); // standard
+	private EnglishAnalyzer analyzer = new EnglishAnalyzer(); // standard
 																// tokenizer,
-																// uses Porter
+																// uses 
 																// Stemmer with
 																// stopword
 																// elimination
@@ -48,13 +46,15 @@ public class TinyDancer {
 																		// and
 																		// parsed
 																		// files
-	private Directory dir;
+	private Directory dir; // index folder
 	private int verbose = 0; // log level for debug purposes
 
 	/**
-	 * Constructor 1. Initialize this.catalog. 2. Open the directory. 3. Create
-	 * configuration for indexer based on analyzer. 4. Initialize the indexer
-	 * this.writer.
+	 * Constructor 
+	 * 1. Initialize this.catalog. 
+	 * 2. create new RAM-folder 
+	 * 3. Create configuration for indexer based on analyzer. 
+	 * 4. Initialize the indexer this.writer.
 	 * 
 	 * @param directory
 	 *            to be indexed
@@ -120,14 +120,14 @@ public class TinyDancer {
 				}
 				Document d = new Document();
 				fr = new FileReader(f);
-				if (f.getName().endsWith(".txt")) {
+				if (f.getName().endsWith(".txt")) {								//.txt search for content
 					d.add(new TextField("contents", fr));
 					d.add(new StringField("path", f.getAbsolutePath(),
 							Field.Store.YES));
 					d.add(new StringField("modified", DateTools.timeToString(
 							f.lastModified(), DateTools.Resolution.SECOND),
 							Field.Store.YES));
-				} else {
+				} else {														//TODO: .html search for body, content, title
 					d.add(new TextField("contents", fr));
 					d.add(new StringField("path", f.getAbsolutePath(),
 							Field.Store.YES));
@@ -171,6 +171,18 @@ public class TinyDancer {
 		}
 	}
 
+	/**
+	 * 1. open index to read
+	 * 2. create searcher to look up in index
+	 * 3. parse query
+	 * 4. store results in hits (sorted by score)
+	 * 5. formated output: results
+	 * 
+	 * @param str
+	 * @throws IOException
+	 * @throws org.apache.lucene.queryparser.classic.ParseException
+	 * @throws ParseException
+	 */
 	public void searchFor(String str) throws IOException,
 			org.apache.lucene.queryparser.classic.ParseException,
 			ParseException {
@@ -201,14 +213,25 @@ public class TinyDancer {
 		reader.close();
 	}
 
-	public static void main(String[] args) {
+	/**
+	 * 1. getting path
+	 * 2. creates new TinyDancer (new IR - System)
+	 * 3. creates index
+	 * 4. output: indexed and parsed files
+	 * 5. getting query from console (input)
+	 * 6. search for query
+	 * 7. return until input = 'q'
+	 * 
+	 * @param args
+	 * @throws IOException
+	 */
+	public static void main(String[] args) throws IOException {
+		
 		Scanner sc = new Scanner(System.in);
 		String query;
-		// directory to index
-		String dir=null;
+		String dir = args[0];
 		
 		try {
-			dir=args[0];
 			TinyDancer td = new TinyDancer(dir); // new irsystem
 			td.createIndex(); // index files
 			td.listFiles();
@@ -221,6 +244,7 @@ public class TinyDancer {
 				System.out.println("\n Tip 'q' to quit \n Searching for: ");
 				query = sc.next();
 			}
+			
 		} catch (IOException e) {
 			System.out.println("ERROR| Could not index the directory: " + dir);
 			e.printStackTrace();
@@ -229,9 +253,6 @@ public class TinyDancer {
 			e.printStackTrace();
 		} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 			System.out.println("ERROR| Could not parse the query");
-			e.printStackTrace();
-		} catch (ArrayIndexOutOfBoundsException e){
-			System.out.println("ERROR| No path to be indexed was entered. Restart with 'java -jar IR_P01.jar [path_to_folder]'");
 			e.printStackTrace();
 		}
 	}
