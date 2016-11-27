@@ -23,7 +23,9 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
 
 /**
  * Command line based Information Retrieval System Parses and indexes
@@ -47,6 +49,7 @@ public class TinyDancer {
 																		// and
 																		// parsed
 																		// files
+	private Directory dir;
 	private int verbose = 0; // log level for debug purposes
 
 	/**
@@ -60,7 +63,7 @@ public class TinyDancer {
 	 */
 	public TinyDancer(String directory) throws IOException {
 		this.catalog = directory;
-		FSDirectory dir = FSDirectory.open(Paths.get(directory));
+		this.dir=new RAMDirectory();
 		IndexWriterConfig config = new IndexWriterConfig(this.analyzer);
 		this.writer = new IndexWriter(dir, config);
 	}
@@ -172,8 +175,7 @@ public class TinyDancer {
 	public void searchFor(String str) throws IOException,
 			org.apache.lucene.queryparser.classic.ParseException,
 			ParseException {
-		IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths
-				.get(this.catalog)));
+		IndexReader reader = DirectoryReader.open(this.dir);
 		IndexSearcher searcher = new IndexSearcher(reader);
 		Query query = new QueryParser("contents", analyzer).parse(str);
 
